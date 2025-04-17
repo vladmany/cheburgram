@@ -1,0 +1,17 @@
+FROM node:18-alpine
+
+RUN addgroup -S gadmin && adduser -S admin -G gadmin
+
+WORKDIR /app
+
+RUN npm install -g @quasar/cli
+
+RUN chown -R admin:gadmin /app
+
+USER admin
+
+RUN chmod -R 755 /app
+
+EXPOSE 9000
+
+CMD [ "sh", "-c", "while :; do sleep 1000; done" ]
