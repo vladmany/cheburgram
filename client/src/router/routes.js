@@ -3,8 +3,9 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '/chat/:id', component: () => import('components/chat/ChatMessages.vue') }
-    ]
+      { path: '/chat/:id', component: () => import('components/chat/ChatMessages.vue'), name: 'chat' },
+    ],
+    meta: { requiresAuth: true }
   },
 
   // // Always leave this as last one,
