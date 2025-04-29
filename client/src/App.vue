@@ -10,6 +10,9 @@
   import { useRoute } from 'vue-router';
   import {io} from "socket.io-client";
 
+  const API_HOST = import.meta.env.VITE_API_HOST ?? 'localhost';
+  const API_PORT = import.meta.env.VITE_API_PORT ?? '4000';
+
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
@@ -19,7 +22,7 @@
     if (loaded && isSignedIn) {
       usersStore.setAuthUser(user.value);
 
-      const socket = io("http://localhost:4000", {
+      const socket = io(`http://${API_HOST}:${API_PORT}`, {
         query: {
           userId: user.value.id,
         }
