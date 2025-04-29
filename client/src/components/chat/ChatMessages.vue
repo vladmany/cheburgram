@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, nextTick, ref, watch} from "vue";
+import {computed, nextTick, ref, watch} from "vue";
 import {useUsersStore} from "stores/users-store.js";
 import moment from "moment";
 import {markAsRead} from "src/apollo/requests/message.js";

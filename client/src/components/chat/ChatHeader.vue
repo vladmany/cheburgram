@@ -11,7 +11,7 @@
   const peerData = inject("peerData");
   const currentPeerId = computed(() => `peer-${currentUser.value.id}`);
 
-  function call(voiceOnly = false) {
+  function call() {
     peerData.value.callUser(currentPeerId.value);
   }
 
