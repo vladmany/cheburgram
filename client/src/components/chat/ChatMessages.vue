@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, ref, watch} from "vue";
+import {computed, inject, nextTick, ref, watch} from "vue";
 import {useUsersStore} from "stores/users-store.js";
 import moment from "moment";
 import {markAsRead} from "src/apollo/requests/message.js";
@@ -63,7 +63,7 @@ watch(() => chat.value?.messages, (newMessages, oldMessages) => {
   });
 }, {deep: true});
 
-
+// const peerData = inject('peerData');
 
 </script>
 
@@ -89,6 +89,7 @@ watch(() => chat.value?.messages, (newMessages, oldMessages) => {
             </div>
           </template>
         </q-chat-message>
+<!--        {{ peerData }}-->
 <!--        <q-chat-message-->
 <!--          avatar="https://cdn.quasar.dev/img/avatar3.jpg"-->
 <!--          :text="['doing fine, how r you?']"-->

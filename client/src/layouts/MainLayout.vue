@@ -9,7 +9,12 @@
         <q-page v-if="!isChatActive()" class="flex flex-center">
           <h1 class="text-bold">CheburGram</h1>
         </q-page>
-        <router-view/>
+        <template v-if="peerData && (!peerData.localStream && !peerData.remoteStream)">
+          <router-view/>
+        </template>
+        <template v-else>
+          <call-window/>
+        </template>
       </q-page-container>
 
       <chat-footer/>
@@ -23,57 +28,25 @@
 
 <script>
 import { useQuasar } from 'quasar'
-import {ref, computed, provide} from 'vue'
+import {ref, computed, provide, inject} from 'vue'
 import { RedirectToSignIn, SignedOut } from '@clerk/vue'
 import { useRoute } from "vue-router";
 import ChatSidebar from "components/chat/ChatSidebar.vue";
 import ChatHeader from "components/chat/ChatHeader.vue";
 import ChatFooter from "components/chat/ChatFooter.vue";
-
-const conversations = [
-  {
-    id: 1,
-    person: 'Razvan Stoenescu',
-    avatar: 'https://cdn.quasar.dev/team/razvan_stoenescu.jpeg',
-    caption: 'I\'m working on Quasar!',
-    time: '15:00',
-    sent: true
-  },
-  {
-    id: 2,
-    person: 'Dan Popescu',
-    avatar: 'https://cdn.quasar.dev/team/dan_popescu.jpg',
-    caption: 'I\'m working on Quasar!',
-    time: '16:00',
-    sent: true
-  },
-  {
-    id: 3,
-    person: 'Jeff Galbraith',
-    avatar: 'https://cdn.quasar.dev/team/jeff_galbraith.jpg',
-    caption: 'I\'m working on Quasar!',
-    time: '18:00',
-    sent: true
-  },
-  {
-    id: 4,
-    person: 'Allan Gaunt',
-    avatar: 'https://cdn.quasar.dev/team/allan_gaunt.png',
-    caption: 'I\'m working on Quasar!',
-    time: '17:00',
-    sent: true
-  }
-]
+import CallWindow from "components/CallWindow.vue";
 
 export default {
   name: 'WhatsappLayout',
-  components: {ChatFooter, ChatHeader, ChatSidebar, SignedOut, RedirectToSignIn },
+  components: {CallWindow, ChatFooter, ChatHeader, ChatSidebar, SignedOut, RedirectToSignIn },
 
   setup () {
     const $q = useQuasar();
     const route = useRoute();
 
     const message = ref('');
+
+    const peerData = inject("peerData");
 
     function isChatActive() {
       return route.name === 'chat';
@@ -87,9 +60,9 @@ export default {
 
     return {
       message,
-      conversations,
       style,
       isChatActive,
+      peerData,
     };
   }
 }

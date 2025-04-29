@@ -1,12 +1,19 @@
 <script setup>
   import {useAppStore} from "stores/app-store.js";
-  import {computed} from "vue";
+  import {computed, inject} from "vue";
   import {useUsersStore} from "stores/users-store.js";
 
   const appStore = useAppStore();
   const usersStore = useUsersStore();
 
   const currentUser = computed(() => usersStore.getCurrentUser);
+
+  const peerData = inject("peerData");
+  const currentPeerId = computed(() => `peer-${currentUser.value.id}`);
+
+  function call(voiceOnly = false) {
+    peerData.value.callUser(currentPeerId.value);
+  }
 
 </script>
 
@@ -32,6 +39,10 @@
       </span>
 
       <q-space/>
+      <template v-if="peerData">
+        <q-btn round flat icon="call" @click="call(true)" />
+        <q-btn round flat icon="videocam" @click="call(false)" />
+      </template>
 
       <q-btn round flat icon="search" />
       <q-btn round flat>
