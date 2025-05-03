@@ -10,14 +10,16 @@
   import { useRoute } from 'vue-router';
   import {io} from "socket.io-client";
   import {usePeer} from "src/composables/usePeer.js";
+  import {useQuasar} from "quasar";
 
   const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+
+  const $q = useQuasar();
 
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
   const socket = ref(null);
-  const peerData = ref(null);
 
   const usersStore = useUsersStore();
   const peer = usePeer();
@@ -26,7 +28,7 @@
     if (loaded && isSignedIn) {
       usersStore.setAuthUser(user.value);
 
-      socket.value = io('https://4f21-18-197-112-125.ngrok-free.app', {
+      socket.value = io(API_URL, {
         query: {
           userId: user.value.id,
         },
@@ -35,6 +37,8 @@
 
       const users = await getAllUsers();
       usersStore.setUsers(users.users);
+
+      $q.loading.hide();
 
       setCurrentUser();
 

@@ -1,7 +1,6 @@
 <script setup>
 import {computed, inject} from "vue";
 import {useUsersStore} from "stores/users-store.js";
-import {useRouter} from "vue-router";
 
 const props = defineProps({
   peerId: String,
@@ -9,7 +8,6 @@ const props = defineProps({
 });
 
 const peer = inject('peer');
-const socket = inject('socket');
 const usersStore = useUsersStore();
 
 const userId = props.peerId.slice(5);

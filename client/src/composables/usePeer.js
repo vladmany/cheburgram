@@ -1,4 +1,4 @@
-import {computed, ref} from 'vue';
+import {ref} from 'vue';
 import Peer from 'peerjs';
 
 export function usePeer() {
@@ -14,7 +14,7 @@ export function usePeer() {
     const peerId = `peer-${userId}`;
     instance.value = new Peer(peerId);
 
-    instance.value.on('open', (val) => {
+    instance.value.on('open', () => {
       isLoaded.value = true;
     });
 

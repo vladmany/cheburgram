@@ -1,25 +1,27 @@
 <template>
   <div class="WAL position-relative bg-grey-4" :style="style">
     <q-layout view="lHh Lpr lFf" class="WAL__layout shadow-3" container>
-      <chat-header/>
+      <template v-if="authUser && users" >
+        <chat-header/>
 
-      <chat-sidebar/>
+        <chat-sidebar/>
 
-      <q-page-container>
-        <template v-if="peer.isCallActive.value">
-          <call-window/>
-        </template>
-        <template v-else-if="peer.incomingCall.value || peer.outgoingCall.value">
-          <call-prepare-window :peer-id="callPeer" :call-type="callType"/>
-        </template>
-        <q-page v-if="!isChatActive()" class="flex flex-center">
-          <h1 class="text-bold">CheburGram</h1>
-        </q-page>
-        <template v-else-if="!peer.isCallActive.value && !(peer.incomingCall.value || peer.outgoingCall.value)">
-          <router-view/>
-        </template>
-      </q-page-container>
-      <chat-footer v-if="!peer.isCallActive.value && !inCall && !outCall"/>
+        <q-page-container>
+          <template v-if="peer.isCallActive.value">
+            <call-window/>
+          </template>
+          <template v-else-if="peer.incomingCall.value || peer.outgoingCall.value">
+            <call-prepare-window :peer-id="callPeer" :call-type="callType"/>
+          </template>
+          <q-page v-if="!isChatActive()" class="flex flex-center">
+            <h1 class="text-bold">CheburGram</h1>
+          </q-page>
+          <template v-else-if="!peer.isCallActive.value && !(peer.incomingCall.value || peer.outgoingCall.value)">
+            <router-view/>
+          </template>
+        </q-page-container>
+        <chat-footer v-if="!peer.isCallActive.value && !inCall && !outCall"/>
+      </template>
     </q-layout>
 
     <signed-out>
@@ -30,7 +32,7 @@
 
 <script>
 import { useQuasar } from 'quasar'
-import {ref, computed, provide, inject, watch} from 'vue'
+import {ref, computed, provide, inject} from 'vue'
 import { RedirectToSignIn, SignedOut } from '@clerk/vue'
 import { useRoute } from "vue-router";
 import ChatSidebar from "components/chat/ChatSidebar.vue";
@@ -38,6 +40,7 @@ import ChatHeader from "components/chat/ChatHeader.vue";
 import ChatFooter from "components/chat/ChatFooter.vue";
 import CallWindow from "components/CallWindow.vue";
 import CallPrepareWindow from "components/CallPrepareWindow.vue";
+import {useUsersStore} from "stores/users-store.js";
 
 export default {
   name: 'WhatsappLayout',
@@ -46,6 +49,12 @@ export default {
   setup () {
     const $q = useQuasar();
     const route = useRoute();
+    const usersStore = useUsersStore();
+
+    const authUser = computed(() => usersStore.getAuthUser);
+    const users = computed(() => usersStore.getUsers);
+
+    $q.loading.show();
 
     const message = ref('');
 
@@ -91,6 +100,8 @@ export default {
       callType,
       inCall,
       outCall,
+      authUser,
+      users,
     };
   }
 }
