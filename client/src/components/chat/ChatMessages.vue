@@ -54,16 +54,16 @@ function readMessage(message) {
 }
 
 watch(() => chat.value?.messages, (newMessages, oldMessages) => {
-  newMessages.forEach(async (newMessage) => {
-    readMessage(newMessage);
+  if (newMessages) {
+    newMessages.forEach(async (newMessage) => {
+      readMessage(newMessage);
 
-    if (oldMessages && !oldMessages.find((oldMessage) => oldMessage.id == newMessage.id)) {
-      await nextTick(() => scrollToBottom());
-    }
-  });
+      if (oldMessages && !oldMessages.find((oldMessage) => oldMessage.id == newMessage.id)) {
+        await nextTick(() => scrollToBottom());
+      }
+    });
+  }
 }, {deep: true});
-
-// const peerData = inject('peerData');
 
 </script>
 
@@ -71,9 +71,6 @@ watch(() => chat.value?.messages, (newMessages, oldMessages) => {
   <div class="chat-container bg-grey-3">
     <q-scroll-area ref="scrollArea" class="chat-messages">
       <div class="q-pa-md" v-if="currentUser && authUser">
-<!--        <q-chat-message-->
-<!--          label="Sunday, 19th"-->
-<!--        />-->
         <q-chat-message
           v-for="message in chat.messages"
           :key="message.id"
@@ -89,12 +86,6 @@ watch(() => chat.value?.messages, (newMessages, oldMessages) => {
             </div>
           </template>
         </q-chat-message>
-<!--        {{ peerData }}-->
-<!--        <q-chat-message-->
-<!--          avatar="https://cdn.quasar.dev/img/avatar3.jpg"-->
-<!--          :text="['doing fine, how r you?']"-->
-<!--          stamp="4 minutes ago"-->
-<!--        />-->
       </div>
     </q-scroll-area>
   </div>

@@ -1,5 +1,6 @@
 import {Chat, ChatParticipant, Message} from "../../../models/index.js";
 import {Sequelize} from "@sequelize/core";
+import {io} from "../../../socket.js";
 
 export default {
     Query: {
@@ -9,7 +10,6 @@ export default {
         createChat: async (_, { userId }, context) => {
             const authUserId = context.userId;
 
-            // Ищем существующий чат, в котором участвуют оба пользователя и только они
             const existingChats = await Chat.findAll({
                 include: [
                     {
@@ -31,7 +31,6 @@ export default {
                     participants.length === 2 &&
                     JSON.stringify(participantIds) === JSON.stringify(targetIds)
                 ) {
-                    // Найден существующий чат между двумя участниками
                     return Chat.findByPk(chat.id, {
                         include: [
                             { association: Chat.associations.participants },
@@ -41,18 +40,25 @@ export default {
                 }
             }
 
-            // Чат не найден — создаём новый
-            const newChat = await Chat.create();
+            let newChat = await Chat.create();
 
             await ChatParticipant.create({ chat_id: newChat.id, user_id: authUserId });
             await ChatParticipant.create({ chat_id: newChat.id, user_id: userId });
 
-            return Chat.findByPk(newChat.id, {
+            newChat = await Chat.findByPk(newChat.id, {
                 include: [
                     { association: Chat.associations.participants },
                     { model: Message },
                 ],
             });
+
+            const sockets = await io.fetchSockets();
+            const socket = sockets.find(s => s.handshake.query.userId === userId);
+            if (socket) {
+                socket.emit('new-chat', {userId: authUserId, chat: newChat});
+            }
+
+            return newChat;
         }
     }
 };

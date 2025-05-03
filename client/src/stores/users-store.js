@@ -10,7 +10,7 @@ export const useUsersStore = defineStore('users', {
 
   getters: {
     getUsers: (state) => state.users,
-    findUserByChatId: (state) => (chatId) => state.users.find(u => u.chat?.id === chatId),
+    findUserByChatId: (state) => (chatId) => state.users.find(u => +u.chat?.id === +chatId),
     getAuthUser: (state) => state.authUser,
     getCurrentUser: (state) => state.users.find(u => u.id === state.currentUserId),
     getOnlineUsers: (state) => state.onlineUsers,
@@ -21,6 +21,7 @@ export const useUsersStore = defineStore('users', {
       this.users = users;
     },
     setUserChat(userId, chat) {
+      console.log(userId);
       const userIndex = this.users.findIndex(user => user.id === userId);
 
       this.users[userIndex].chat = chat;
