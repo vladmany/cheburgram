@@ -8,11 +8,11 @@
 
   const currentUser = computed(() => usersStore.getCurrentUser);
 
-  const peerData = inject("peerData");
+  const peer = inject("peer");
   const currentPeerId = computed(() => `peer-${currentUser.value.id}`);
 
   function call() {
-    peerData.value.callUser(currentPeerId.value);
+    peer.callUser(currentPeerId.value);
   }
 
 </script>
@@ -39,7 +39,7 @@
       </span>
 
       <q-space/>
-      <template v-if="peerData">
+      <template v-if="peer.isLoaded">
         <q-btn round flat icon="call" @click="call(true)" />
         <q-btn round flat icon="videocam" @click="call(false)" />
       </template>

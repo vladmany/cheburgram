@@ -6,18 +6,20 @@
       <chat-sidebar/>
 
       <q-page-container>
+        <template v-if="peer.isCallActive.value">
+          <call-window/>
+        </template>
+        <template v-else-if="peer.incomingCall.value || peer.outgoingCall.value">
+          <call-prepare-window :peer-id="callPeer" :call-type="callType"/>
+        </template>
         <q-page v-if="!isChatActive()" class="flex flex-center">
           <h1 class="text-bold">CheburGram</h1>
         </q-page>
-        <template v-if="peerData && (!peerData.localStream && !peerData.remoteStream)">
+        <template v-else-if="!peer.isCallActive.value && !(peer.incomingCall.value || peer.outgoingCall.value)">
           <router-view/>
         </template>
-        <template v-else>
-          <call-window/>
-        </template>
       </q-page-container>
-
-      <chat-footer/>
+      <chat-footer v-if="!peer.isCallActive.value && !inCall && !outCall"/>
     </q-layout>
 
     <signed-out>
@@ -28,17 +30,18 @@
 
 <script>
 import { useQuasar } from 'quasar'
-import {ref, computed, provide, inject} from 'vue'
+import {ref, computed, provide, inject, watch} from 'vue'
 import { RedirectToSignIn, SignedOut } from '@clerk/vue'
 import { useRoute } from "vue-router";
 import ChatSidebar from "components/chat/ChatSidebar.vue";
 import ChatHeader from "components/chat/ChatHeader.vue";
 import ChatFooter from "components/chat/ChatFooter.vue";
 import CallWindow from "components/CallWindow.vue";
+import CallPrepareWindow from "components/CallPrepareWindow.vue";
 
 export default {
   name: 'WhatsappLayout',
-  components: {CallWindow, ChatFooter, ChatHeader, ChatSidebar, SignedOut, RedirectToSignIn },
+  components: {CallPrepareWindow, CallWindow, ChatFooter, ChatHeader, ChatSidebar, SignedOut, RedirectToSignIn },
 
   setup () {
     const $q = useQuasar();
@@ -46,7 +49,28 @@ export default {
 
     const message = ref('');
 
-    const peerData = inject("peerData");
+    const peer = inject("peer");
+
+    const callType = computed(() => {
+      if (peer.incomingCall.value)
+        return 'in';
+      else if (peer.outgoingCall.value)
+        return 'out';
+
+      return null;
+    });
+
+    const callPeer = computed(() => {
+      if (peer.incomingCall.value)
+        return peer.incomingCall.value.peer;
+      else if (peer.outgoingCall.value)
+        return peer.outgoingCall.value.peer;
+
+      return null;
+    });
+
+    const inCall = computed(() => peer.incomingCall.value);
+    const outCall = computed(() => peer.outgoingCall.value);
 
     function isChatActive() {
       return route.name === 'chat';
@@ -62,7 +86,11 @@ export default {
       message,
       style,
       isChatActive,
-      peerData,
+      peer,
+      callPeer,
+      callType,
+      inCall,
+      outCall,
     };
   }
 }

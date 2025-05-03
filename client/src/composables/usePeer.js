@@ -1,54 +1,96 @@
-import { ref } from 'vue';
+import {computed, ref} from 'vue';
 import Peer from 'peerjs';
 
 export function usePeer() {
-  const peer = ref(null);
-  const call = ref(null);
+  const instance = ref(null);
+  const isLoaded = ref(false);
+  const incomingCall = ref(null);
+  const outgoingCall = ref(null);
   const localStream = ref(null);
   const remoteStream = ref(null);
+  const isCallActive = ref(false);
 
-  const initPeer = (userId) => {
+  const init = (userId) => {
     const peerId = `peer-${userId}`;
-    peer.value = new Peer(peerId);
+    instance.value = new Peer(peerId);
 
-    peer.value.on('open', (val) => {
-      console.log('open', val);
+    instance.value.on('open', (val) => {
+      isLoaded.value = true;
     });
 
-    peer.value.on('call', async (incomingCall) => {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-      localStream.value = stream;
-
-      incomingCall.answer(stream);
-
-      incomingCall.on('stream', (remoteStreamData) => {
-        remoteStream.value = remoteStreamData;
-      });
-
-      call.value = incomingCall;
+    instance.value.on('call', async (call) => {
+      incomingCall.value = call;
     });
   };
 
+  async function acceptCall() {
+    if (incomingCall.value) {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localStream.value = stream;
+
+      incomingCall.value.answer(stream);
+
+      incomingCall.value.on('stream', (remoteStreamData) => {
+        remoteStream.value = remoteStreamData;
+        isCallActive.value = true;
+      });
+
+      incomingCall.value.on('close', () => {
+        incomingCall.value = null;
+        outgoingCall.value = null;
+        reset();
+      });
+    }
+  }
+
+  function cancelCall() {
+    if (incomingCall.value) {
+      incomingCall.value.close();
+    }
+
+    if (outgoingCall.value) {
+      outgoingCall.value.close();
+    }
+  }
+
+  function reset() {
+    isCallActive.value = false;
+    remoteStream.value = null;
+    localStream.value = null;
+  }
+
   const callUser = async (otherPeerId) => {
-    console.log('Запрашиваю доступ к камере и микрофону...');
-    const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-    console.log('Поток получен:', stream)
+    if (isCallActive.value)
+      return false;
+
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localStream.value = stream;
 
-    const outgoingCall = peer.value.call(otherPeerId, stream);
+    outgoingCall.value = instance.value.call(otherPeerId, stream);
 
-    outgoingCall.on('stream', (remoteStreamData) => {
+    outgoingCall.value.on('stream', (remoteStreamData) => {
+      isCallActive.value = true;
       remoteStream.value = remoteStreamData;
     });
 
-    call.value = outgoingCall;
+    outgoingCall.value.on('close', () => {
+      outgoingCall.value = null;
+      incomingCall.value = null;
+      reset();
+    });
   };
 
   return {
-    peer,
+    instance,
     localStream,
     remoteStream,
-    initPeer,
+    init,
     callUser,
+    isLoaded,
+    isCallActive,
+    incomingCall,
+    outgoingCall,
+    cancelCall,
+    acceptCall,
   };
 }

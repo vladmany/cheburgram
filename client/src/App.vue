@@ -11,8 +11,7 @@
   import {io} from "socket.io-client";
   import {usePeer} from "src/composables/usePeer.js";
 
-  const API_HOST = import.meta.env.VITE_API_HOST ?? 'localhost';
-  const API_PORT = import.meta.env.VITE_API_PORT ?? '4000';
+  const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
@@ -21,16 +20,17 @@
   const peerData = ref(null);
 
   const usersStore = useUsersStore();
-  const { initPeer, peer, localStream, remoteStream, callUser} = usePeer();
+  const peer = usePeer();
 
   watch(isLoaded, async (loaded) => {
     if (loaded && isSignedIn) {
       usersStore.setAuthUser(user.value);
 
-      socket.value = io(`http://${API_HOST}:${API_PORT}`, {
+      socket.value = io('https://4f21-18-197-112-125.ngrok-free.app', {
         query: {
           userId: user.value.id,
-        }
+        },
+        extraHeaders: {'ngrok-skip-browser-warning': true},
       });
 
       const users = await getAllUsers();
@@ -50,19 +50,12 @@
         usersStore.markMessageAsRead(messageId);
       });
 
-      initPeer(user.value.id);
-
-      peerData.value = {
-        peer,
-        localStream,
-        remoteStream,
-        callUser,
-      };
+      peer.init(user.value.id);
     }
   });
 
   provide('socket', socket);
-  provide('peerData', peerData);
+  provide('peer', peer);
 
   const route = useRoute();
 

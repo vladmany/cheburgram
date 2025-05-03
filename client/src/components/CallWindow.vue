@@ -1,67 +1,108 @@
 <template>
-  <div class="fixed inset-0 bg-gray-900 bg-opacity-95 flex flex-col items-center justify-center z-50">
-    <div class="text-white text-xl mb-4">
-      {{ callStateText }}
-    </div>
-
-    <div class="relative w-full max-w-3xl flex justify-center items-center">
-      <video ref="remoteVideo" class="w-3/4 rounded-xl" autoplay playsinline></video>
-      <video
-        ref="localVideo"
-        class="absolute bottom-4 right-4 w-1/4 border-2 border-white rounded-xl shadow-lg"
-        autoplay
-        playsinline
-      ></video>
-    </div>
-
-    <div class="mt-6 flex space-x-6">
-      <button
-        class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl shadow"
-        @click="endCall"
-      >
-        Завершить
-      </button>
+  <div class="call-container bg-grey-4">
+    <div class="full-height">
+      <div class="full-height flex column justify-start q-pt-lg">
+        <div class="flex row justify-center q-gutter-md">
+          <div class="video-container">
+            <video
+              ref="remoteVideo"
+              class=""
+              autoplay
+              playsinline
+            ></video>
+          </div>
+          <div class="video-container">
+            <video
+              ref="localVideo"
+              class=""
+              autoplay
+              muted
+              playsinline
+            ></video>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-center q-my-sm q-gutter-x-lg">
+        <q-btn @click="toggleMic" push color="white" text-color="black" round :icon="isMicEnabled ? 'mic_off' : 'mic'" size="lg" />
+        <q-btn @click="peer.cancelCall" push color="red" text-color="white" icon="call_end" size="lg" />
+        <q-btn @click="toggleCam" push color="white" text-color="black" round :icon="isCamEnabled ? 'videocam_off' : 'videocam'" size="lg"/>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import {ref, watch, computed, inject} from 'vue';
+import {ref, inject, watch, onMounted} from 'vue';
 
 const localVideo = ref(null);
 const remoteVideo = ref(null);
 
-const callStatus = ref('connecting'); // 'connecting', 'ringing', 'in-call'
+const peer = inject('peer');
 
-const peerData = inject('peerData');
+const isMicEnabled = ref(peer.localStream.value.getAudioTracks()[0].enabled);
+const isCamEnabled = ref(peer.localStream.value.getVideoTracks()[0].enabled);
 
-const callStateText = computed(() => {
-  switch (callStatus.value) {
-    case 'connecting':
-      return 'Подключение...';
-    case 'ringing':
-      return 'Дозвон...';
-    case 'in-call':
-      return 'Разговор активен';
-    default:
-      return '';
+function toggleMic() {
+  peer.instance.value.connections[Object.keys(peer.instance.value.connections)[0]][0].peerConnection.getSenders().forEach(sender => {
+    if (sender.track.kind === 'audio') {
+      const newAudioTrack = peer.localStream.value.getAudioTracks()[0];
+      newAudioTrack.enabled = !isMicEnabled.value;
+      sender.replaceTrack(newAudioTrack);
+      isMicEnabled.value = newAudioTrack.enabled;
+    }
+  })
+}
+
+function toggleCam() {
+  peer.instance.value.connections[Object.keys(peer.instance.value.connections)[0]][0].peerConnection.getSenders().forEach(sender => {
+    if (sender.track.kind === 'video') {
+      const newVideoTrack = peer.localStream.value.getVideoTracks()[0];
+      newVideoTrack.enabled = !isCamEnabled.value;
+      sender.replaceTrack(newVideoTrack);
+      isCamEnabled.value = newVideoTrack.enabled;
+    }
+  })
+}
+
+watch(() => peer, (p) => {
+  if (localVideo.value && p.localStream.value) {
+    localVideo.value.srcObject = p.localStream.value;
   }
-});
 
-watch(peerData, (data) => {
-  if (localVideo.value && data.localStream) {
-    console.log(111);
-    localVideo.value.srcObject = data.localStream;
-  }
-
-  if (remoteVideo.value && data.remoteStream) {
-    console.log(222);
-    localVideo.value.srcObject = data.remoteStream;
+  if (remoteVideo.value && p.remoteStream.value) {
+    remoteVideo.value.srcObject = p.remoteStream.value;
   }
 }, {deep: true});
 
 
-function endCall() {
-  window.location.reload(); // Быстрое завершение звонка — можно заменить на router push
-}
+onMounted(() => {
+  if (localVideo.value && peer.localStream.value) {
+    localVideo.value.srcObject = peer.localStream.value;
+  }
+
+  if (remoteVideo.value && peer.remoteStream.value) {
+    remoteVideo.value.srcObject = peer.remoteStream.value;
+  }
+});
+
 </script>
+
+<style scoped lang="sass">
+.call-container
+  max-height: 100vh - 6
+.video-container
+  max-width: 100vh
+  max-height: 100vh - 67
+  height: 100%
+  width: 100%
+  display: flex
+  justify-content: center
+  background: #000000
+  margin-right: 10px
+  margin-left: 25px
+  border-radius: 15px
+  video
+    max-width: inherit
+    max-height: inherit
+    transform: scaleX(-1)
+</style>

@@ -2,7 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 
 export const useAppStore = defineStore('app', {
   state: () => ({
-    leftDrawerOpen: true,
+    leftDrawerOpen: false,
   }),
 
   getters: {

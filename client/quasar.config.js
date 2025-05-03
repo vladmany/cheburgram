@@ -68,7 +68,14 @@ export default defineConfig((/* ctx */) => {
             useFlatConfig: true
           }
         }, { server: false }]
-      ]
+      ],
+      extendViteConf (viteConf, {isServer, isClient}) {
+        return {
+          server: {
+            allowedHosts: ['11a6-176-37-107-23.ngrok-free.app']
+          }
+        }
+      }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver

@@ -2,11 +2,10 @@ import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core
 import { provideApolloClient } from '@vue/apollo-composable';
 import {setContext} from "@apollo/client/link/context";
 
-const host = import.meta.env.VITE_API_HOST || 'localhost';
-const port  = import.meta.env.VITE_API_PORT || '3000';
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
 const httpLink = createHttpLink({
-  uri: `http://${host}:${port}/graphql`,
+  uri: `${API_URL}/graphql`,
 });
 
 const authLink = setContext(async (_, { headers }) => {

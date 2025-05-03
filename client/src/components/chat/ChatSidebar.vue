@@ -138,10 +138,10 @@ function dateFormat(timestamp) {
 
           <q-item-section side>
             <q-item-label v-if="user.chat?.messages.length" caption>
-              {{ dateFormat(user.chat.messages[user.chat.messages.length-1].send_at) }}
+              {{ dateFormat(user.chat.messages[user.chat.messages.length-1].sent_at) }}
             </q-item-label>
             <template v-if="user.chat?.messages.length">
-              <template v-if="getUnreadMessages(user).length && (user.id !== currentUser.id)">
+              <template v-if="getUnreadMessages(user).length && (user.id !== currentUser?.id)">
                 <div class="flex justify-center" style="width: 20px; height: 20px; background: var(--q-primary); border-radius: 50%; margin-right: 5px;">
                   <span class="text-white text-bold text-center">{{ getUnreadMessages(user).length }}</span>
                 </div>
