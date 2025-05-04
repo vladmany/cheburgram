@@ -93,7 +93,7 @@ watch(() => chat.value?.messages, (newMessages, oldMessages) => {
 
 <style scoped lang="sass">
 .chat-container
-  height: 810px
+  height: calc(100vh - 100px)
   display: flex
   overflow: hidden!important
   justify-content: center
