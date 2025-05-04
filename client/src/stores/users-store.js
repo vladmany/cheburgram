@@ -21,7 +21,6 @@ export const useUsersStore = defineStore('users', {
       this.users = users;
     },
     setUserChat(userId, chat) {
-      console.log(userId);
       const userIndex = this.users.findIndex(user => user.id === userId);
 
       this.users[userIndex].chat = chat;

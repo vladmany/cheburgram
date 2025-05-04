@@ -43,7 +43,6 @@
       setCurrentUser();
 
       socket.value.on('new-chat', ({userId, chat}) => {
-        console.log(userId, chat);
         usersStore.setUserChat(userId, chat);
       });
 
@@ -70,7 +69,6 @@
 
   function setCurrentUser() {
     const currentUser = usersStore.findUserByChatId(route.params.id);
-    console.log(route.params.id);
     usersStore.setCurrentUserId(currentUser?.id);
   }
 
