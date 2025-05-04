@@ -2,7 +2,7 @@
   <div class="WAL position-relative bg-grey-4" :style="style">
     <q-layout view="lHh Lpr lFf" class="WAL__layout shadow-3" container>
       <template v-if="authUser && users" >
-        <chat-header/>
+        <chat-header v-if="currentUser" />
 
         <chat-sidebar/>
 
@@ -20,7 +20,7 @@
             <router-view/>
           </template>
         </q-page-container>
-        <chat-footer v-if="!peer.isCallActive.value && !inCall && !outCall"/>
+        <chat-footer v-if="currentUser && !peer.isCallActive.value && !inCall && !outCall"/>
       </template>
     </q-layout>
 
@@ -53,6 +53,7 @@ export default {
 
     const authUser = computed(() => usersStore.getAuthUser);
     const users = computed(() => usersStore.getUsers);
+    const currentUser = computed(() => usersStore.getCurrentUser);
 
     $q.loading.show();
 
@@ -102,6 +103,7 @@ export default {
       outCall,
       authUser,
       users,
+      currentUser,
     };
   }
 }
